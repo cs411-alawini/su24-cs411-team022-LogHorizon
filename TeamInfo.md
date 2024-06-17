@@ -4,16 +4,16 @@
 
 |   Info      |        Description     |
 | ----------- | ---------------------- |
-| TeamID      |        Team-000        |
-| TeamName    |         sample         |
-| Captain     |       Abdu Alawini     |
-| Captain     |  alawini@illinois.edu  |
-| Member1     |        Lahari Anne       |
-| Member1     |   lanne2@illinois.edu  |
-| Member2     |                        |
-| Member2     |                        |
-| Member3     |                        |
-| Member3     |                        |
+| TeamID      |        Team-022        |
+| TeamName    |        LogHorizon         |
+| Captain     |      Uriel Arellano     |
+| Captain     |   uriela2@illinois.edu  |
+| Member1     |      Mohammad Fattash       |
+| Member1     |   fattash2@illinois.edu  |
+| Member2     |      Jonathan Stanley       |
+| Member2     |   jbiel2@illinois.edu       |
+| Member3     |       Mike Lee               |
+| Member3     |   dcl3@illinois.edu         |
 
 ## Project Information
 
