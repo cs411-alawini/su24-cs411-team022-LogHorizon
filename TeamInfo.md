@@ -19,10 +19,10 @@
 
 |   Info      |        Description     |
 | ----------- | ---------------------- |
-|  Title      |       ProjectTitle     |
+|  Title      |       Game Price Tracker and Recommendations     |
 | System URL  |      link_to_system    |
 | Video Link  |      link_to_video     |
 
 ## Project Summary
 
-This is a summary of the project!
+Game Price Tracker will use data about deals and regional price differences of games, and then make recommendations to users based on user info. It will, essentially, look at user data (like what games they bought, their most played genres, their favorite studios) and then find the best deals for the best recommendations, and then present those deals to the user.
