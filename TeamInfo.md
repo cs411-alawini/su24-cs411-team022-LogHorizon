@@ -19,10 +19,10 @@
 
 |   Info      |        Description     |
 | ----------- | ---------------------- |
-|  Title      |       Game Price Tracker and Recommendations     |
+|  Title      |       GameGenius     |
 | System URL  |      link_to_system    |
 | Video Link  |      link_to_video     |
 
 ## Project Summary
 
-Game Price Tracker will use data about deals and regional price differences of games, and then make recommendations to users based on user info. It will, essentially, look at user data (like what games they bought, their most played genres, their favorite studios) and then find the best deals for the best recommendations, and then present those deals to the user.
+GameGenius will use Steam data, user preferences, and user budget to recommend a game in their price range. The user can put in games they like or genres along with their budget and our application will generate a list of apps based on Steam data that the user might enjoy.
