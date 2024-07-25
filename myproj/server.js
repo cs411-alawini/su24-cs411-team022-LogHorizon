@@ -1,3 +1,93 @@
+/*
+CHATGPT EXPLANATION FOR HOW TO CONNECT FRONT END TO BACKEND
+
+Update your HTML form (index.ejs or index.html) to include the correct action attribute and method:
+
+<form action="/signin" method="POST">
+  <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+  
+  <div class="form-floating">
+    <input type="email" class="form-control" id="floatingInput" name="email" placeholder="name@example.com">
+    <label for="floatingInput">Email address</label>
+  </div>
+  <div class="form-floating">
+    <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Password">
+    <label for="floatingPassword">Password</label>
+  </div>
+
+  <div class="form-check text-start my-3">
+    <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
+    <label class="form-check-label" for="flexCheckDefault">Remember me</label>
+  </div>
+  
+  <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+  <p class="mt-5 mb-3 text-body-secondary">&copy; 2017–2024</p>
+</form>
+
+
+FOR BACKEND:
+In your Node.js backend (app.js or server.js), 
+you need to handle the POST request from the form. 
+Make sure you have body-parser middleware installed to parse incoming request bodies:
+
+var express = require('express');
+var bodyParser = require('body-parser');
+var mysql = require('mysql2');
+var path = require('path');
+
+var connection = mysql.createConnection({
+  host: '34.72.44.127',
+  user: 'root',
+  password: 'abc123',
+  database: 'GameRecommender'
+});
+
+var app = express();
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// Routes
+app.get('/', function(req, res) {
+  res.render('index', { title: 'Mark Attendance' });
+});
+
+app.post('/signin', function(req, res) {
+  var email = req.body.email;
+  var password = req.body.password;
+
+  // Perform authentication or database operations here
+  // Example of querying database
+  connection.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], function(err, results) {
+    if (err) throw err;
+
+    if (results.length > 0) {
+      // Successful login
+      res.redirect('/success');
+    } else {
+      // Failed login
+      res.send('Invalid credentials');
+    }
+  });
+});
+
+app.get('/success', function(req, res) {
+  res.send('Attendance marked successfully!');
+});
+
+// Server setup
+app.listen(3000, function() {
+  console.log('Server is running on port 3000');
+});
+
+*/
+
+
+
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var mysql = require('mysql2');
@@ -17,7 +107,7 @@ var app = express();
 // set up ejs view engine 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
- 
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '../public'));
