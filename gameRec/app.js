@@ -51,7 +51,7 @@ console.log(sql);
 app.post('/api/login', function(req, res) {
   const umail = req.body.umail;
   const password = req.body.password;
-  const sql = `SELECT * FROM users WHERE (email='${umail}' OR username='${umail}') AND password='${password}'`;
+  const sql = `SELECT * FROM Users WHERE (Email='${umail}' OR Username='${umail}') AND Password='${password}'`;
 
   connection.query(sql, function(err, results) {
     if (err) {
@@ -79,7 +79,7 @@ app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
 
   // Check if the user already exists
-  const checkUserSql = 'SELECT * FROM users WHERE email = ?';
+  const checkUserSql = 'SELECT * FROM Users WHERE Email = ?';
   connection.query(checkUserSql, [email], async (err, results) => {
       if (err) {
           console.error('Error checking user existence:', err);
@@ -95,7 +95,7 @@ app.post('/api/register', async (req, res) => {
       const hashPassword = await bcrypt.hash(password, 10);
 
       // Insert the new user into the database
-      const insertUserSql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+      const insertUserSql = 'INSERT INTO Users (Username, Email, Password) VALUES (?, ?, ?)';
       connection.query(insertUserSql, [username, email, hashPassword], (err, result) => {
           if (err) {
               console.error('Error registering user:', err);
