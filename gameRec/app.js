@@ -51,7 +51,7 @@ console.log(sql);
 app.post('/api/login', function(req, res) {
   const umail = req.body.umail;
   const password = req.body.password;
-  const sql = `SELECT * FROM User WHERE (Email='${umail}' OR Username='${umail}') AND Password='${password}'`;
+  const sql = `SELECT * FROM User WHERE (Email='${umail}' OR Username='${umail}')`;
 
   connection.query(sql, function(err, results) {
     if (err) {
@@ -92,11 +92,10 @@ app.post('/api/register', async (req, res) => {
       }
 
       // Hash the password
-      const hashPassword = await bcrypt.hash(password, 10);
 
       // Insert the new user into the database
       const insertUserSql = 'INSERT INTO User (Username, Email, Password) VALUES (?, ?, ?)';
-      connection.query(insertUserSql, [username, email, hashPassword], (err, result) => {
+      connection.query(insertUserSql, [username, email, password], (err, result) => {
           if (err) {
               console.error('Error registering user:', err);
               res.status(500).send({ message: 'Error registering user', error: err });
