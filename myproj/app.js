@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const path = require("path");
 const bodyParser = require('body-parser');
 const users = require('./data').userDB;
+// !!!! NOTE! the data.js file does not exist on the github
+// ... because we're using our sql database instead
 
 const app = express();
 const server = http.createServer(app);
