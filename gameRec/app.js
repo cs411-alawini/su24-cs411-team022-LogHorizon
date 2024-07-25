@@ -51,7 +51,7 @@ console.log(sql);
 app.post('/api/login', function(req, res) {
   const umail = req.body.umail;
   const password = req.body.password;
-  const sql = `SELECT * FROM User WHERE (Email='${umail}' OR Username='${umail}')`;
+  const sql = `SELECT * FROM User WHERE Email='${umail}' OR Username='${umail}'`;
 
   connection.query(sql, function(err, results) {
     if (err) {
@@ -60,13 +60,13 @@ app.post('/api/login', function(req, res) {
       return;
     }
     if (results.length === 0) {
-      res.status(401).send({ message: 'Invalid email or password' });
+      res.status(401).send({ message: 'Invalid email or password asdf' });
       return;
     }
 
     const user = results[0];
-    if (user.password !== password) {
-      res.status(401).send({ message: 'Invalid email or password' });
+    if (user.Password !== password) {
+      res.status(401).send({ message: 'Incorrect email or password' });
       return;
     }
     else {
