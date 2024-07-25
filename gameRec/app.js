@@ -48,7 +48,7 @@ console.log(sql);
   });
 });
 
-app.post(/api/login, function(req, res) {
+app.post('/api/login', function(req, res) {
   const umail = req.body.umail;
   const password = req.body.password;
   const sql = `SELECT * FROM users WHERE (email='${umail}' OR username='${umail}') AND password='${password}'`;
