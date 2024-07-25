@@ -48,47 +48,91 @@ console.log(sql);
   });
 });
 
-app.get('/api/attendance', function(req, res) {
-  var sql = 'SELECT * FROM attendance';
+app.post(/api/login, function(req, res) {
+  const umail = req.body.umail;
+  const password = req.body.password;
+  const sql = `SELECT * FROM users WHERE (email='${umail}' OR username='${umail}') AND password='${password}'`;
 
   connection.query(sql, function(err, results) {
     if (err) {
-      console.error('Error fetching attendance data:', err);
-      res.status(500).send({ message: 'Error fetching attendance data', error: err });
+      console.error('Error fetching user data:', err);
+      res.status(500).send({ message: 'Error fetching user data', error: err });
       return;
     }
-    res.json(results);
+    if (results.length === 0) {
+      res.status(401).send({ message: 'Invalid email or password' });
+      return;
+    }
+
+    const user = results[0];
+    if (user.password !== password) {
+      res.status(401).send({ message: 'Invalid email or password' });
+      return;
+    }
+    else {
+      res.json(user);
+    }
   });
 });
 
-app.
+app.post('/api/register', async (req, res) => {
+  const { username, email, password } = req.body;
 
-app.post('/login', async (req, res) => {
-  try{
-      let foundUser = users.find((data) => req.body.email === data.email);
-      if (foundUser) {
-  
-          let submittedPass = req.body.password; 
-          let storedPass = foundUser.password; 
-  
-          const passwordMatch = await bcrypt.compare(submittedPass, storedPass);
-          if (passwordMatch) {
-              let usrname = foundUser.username;
-              res.send(`<div align ='center'><h2>login successful</h2></div><br><br><br><div align ='center'><h3>Hello ${usrname}</h3></div><br><br><div align='center'><a href='./login.html'>logout</a></div>`);
-          } else {
-              res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align ='center'><a href='./login.html'>login again</a></div>");
+  // Check if the user already exists
+  const checkUserSql = 'SELECT * FROM users WHERE email = ?';
+  connection.query(checkUserSql, [email], async (err, results) => {
+      if (err) {
+          console.error('Error checking user existence:', err);
+          res.status(500).send({ message: 'Error checking user existence', error: err });
+          return;
+      }
+      if (results.length > 0) {
+          res.status(409).send({ message: 'Email already used' });
+          return;
+      }
+
+      // Hash the password
+      const hashPassword = await bcrypt.hash(password, 10);
+
+      // Insert the new user into the database
+      const insertUserSql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+      connection.query(insertUserSql, [username, email, hashPassword], (err, result) => {
+          if (err) {
+              console.error('Error registering user:', err);
+              res.status(500).send({ message: 'Error registering user', error: err });
+              return;
           }
-      }
-      else {
-  
-          let fakePass = `$2b$$10$ifgfgfgfgfgfgfggfgfgfggggfgfgfga`;
-          await bcrypt.compare(req.body.password, fakePass);
-  
-          res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align='center'><a href='./login.html'>login again<a><div>");
-      }
-  } catch{
-      res.send("Internal server error");
-  }
+          res.send({ message: 'Registration successful!' });
+      });
+  });
 });
+
+// app.post('/login', async (req, res) => {
+//   try{
+//       let foundUser = users.find((data) => req.body.email === data.email);
+//       if (foundUser) {
+  
+//           let submittedPass = req.body.password; 
+//           let storedPass = foundUser.password; 
+  
+//           const passwordMatch = await bcrypt.compare(submittedPass, storedPass);
+//           if (passwordMatch) {
+//               let usrname = foundUser.username;
+//               res.send(`<div align ='center'><h2>login successful</h2></div><br><br><br><div align ='center'><h3>Hello ${usrname}</h3></div><br><br><div align='center'><a href='./login.html'>logout</a></div>`);
+//           } else {
+//               res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align ='center'><a href='./login.html'>login again</a></div>");
+//           }
+//       }
+//       else {
+  
+//           let fakePass = `$2b$$10$ifgfgfgfgfgfgfggfgfgfggggfgfgfga`;
+//           await bcrypt.compare(req.body.password, fakePass);
+  
+//           res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align='center'><a href='./login.html'>login again<a><div>");
+//       }
+//   } catch{
+//       res.send("Internal server error");
+//   }
+// });
 
 module.exports = app;
