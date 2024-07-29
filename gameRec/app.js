@@ -21,22 +21,114 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '../public'));
 
+
 /* GET home page, respond by rendering index.ejs */
 app.get('/', function(req, res) {
   res.render('index', { title: 'Mark Attendance' });
+
+  // find developers that make above average games
+  const sql_one = `SELECT d.Name, AVG(r.Rating) as AvgRating, COUNT(g.GameID) as GameCount
+    FROM Developer d
+    JOIN Game g ON d.DeveloperID = g.DeveloperID
+    JOIN Recommendation r ON g.GameID = r.GameID
+    GROUP BY d.DeveloperID
+    HAVING AVG(r.Rating) > (
+        SELECT AVG(r2.Rating)
+        FROM Recommendation r2
+    )
+    ORDER BY AvgRating DESC, GameCount DESC
+    LIMIT 15;
+    `;
+  // top rated games
+  const sql_two = `SELECT g.GameID, g.Title, d.Name AS Developer, AVG(r.Rating) AS AvgRating
+    FROM Game g
+    JOIN Recommendation r ON g.GameID = r.GameID
+    JOIN Developer d ON g.DeveloperID = d.DeveloperID
+    GROUP BY g.GameID, g.Title, d.Name
+    ORDER BY AvgRating DESC
+    LIMIT 15;
+    `;
+  // recommendations based on games played
+  /*
+  let UserId = 'merp'
+  const sql_three = `SELECT g.Title, g.Price, COUNT(p2.GameID) as PlayCount
+    FROM Game g
+    JOIN Plays p2 ON g.GameID = p2.GameID
+    JOIN GameTags gt ON g.GameID = gt.GameID
+    JOIN Tag t ON gt.TagID = t.TagID
+    WHERE t.TagName IN (
+        SELECT DISTINCT t2.TagName
+        FROM GameTags gt2
+        JOIN Tag t2 ON gt2.TagID = t2.TagID
+        JOIN Plays p ON gt2.GameID = p.GameID
+    )
+    AND g.GameID NOT IN (
+        SELECT GameID
+        FROM Plays
+        WHERE UserID = @${UserId}
+    )
+    GROUP BY g.GameID
+    ORDER BY PlayCount DESC, g.Price ASC
+    LIMIT 15;
+    `;
+    */
+  
+    connection.query(sql_one, function(err, results) {
+      if (err) {
+        console.error('Error fetching developer data:', err);
+        res.status(500).send({ message: 'Error fetching user data', error: err });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(401).send({ message: 'No above-average developers found' });
+        return;
+      }
+
+      const developers = results;
+      res.render('index', { title: 'Developer List', developers: developers });
+    });
+
+    connection.query(sql_two, function(err, results) {
+      if (err) {
+        console.error('Error fetching top rated games data:', err);
+        res.status(500).send({ message: 'Error fetching games data', error: err });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(401).send({ message: 'No top rated games found' });
+        return;
+      }
+
+      const top_games = results;
+      res.render('index', { title: 'Top Rated Games', top_games: top_games});
+    });
+
+    /*
+    connection.query(sql_three, function(err, results) {
+      if (err) {
+        console.error('Error fetching recommended games data:', err);
+        res.status(500).send({ message: 'Error fetching games data', error: err });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(401).send({ message: 'No recommended games found' });
+        return;
+      }
+
+      const recommended_games = results;
+      res.render('index', { title: 'Recommended Games', recommended_games: recommended_games});
+    });
+    */
+    
 });
 
-app.get('/success', function(req, res) {
-      res.send({'message': 'Attendance marked successfully!'});
-});
- 
+
+
 // this code is executed when a user clicks the form submit button
 app.post('/mark', function(req, res) {
   var netid = req.body.netid;
    
   var sql = `INSERT INTO attendance (netid, present) VALUES ('${netid}',1)`;
-
-
 
 console.log(sql);
   connection.query(sql, function(err, result) {
@@ -106,32 +198,5 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-// app.post('/login', async (req, res) => {
-//   try{
-//       let foundUser = users.find((data) => req.body.email === data.email);
-//       if (foundUser) {
-  
-//           let submittedPass = req.body.password; 
-//           let storedPass = foundUser.password; 
-  
-//           const passwordMatch = await bcrypt.compare(submittedPass, storedPass);
-//           if (passwordMatch) {
-//               let usrname = foundUser.username;
-//               res.send(`<div align ='center'><h2>login successful</h2></div><br><br><br><div align ='center'><h3>Hello ${usrname}</h3></div><br><br><div align='center'><a href='./login.html'>logout</a></div>`);
-//           } else {
-//               res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align ='center'><a href='./login.html'>login again</a></div>");
-//           }
-//       }
-//       else {
-  
-//           let fakePass = `$2b$$10$ifgfgfgfgfgfgfggfgfgfggggfgfgfga`;
-//           await bcrypt.compare(req.body.password, fakePass);
-  
-//           res.send("<div align ='center'><h2>Invalid email or password</h2></div><br><br><div align='center'><a href='./login.html'>login again<a><div>");
-//       }
-//   } catch{
-//       res.send("Internal server error");
-//   }
-// });
 
 module.exports = app;
