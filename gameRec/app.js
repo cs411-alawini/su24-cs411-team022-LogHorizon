@@ -22,6 +22,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
+
 /* GET home page, respond by rendering index.ejs */
 app.get('/', async function(req, res) {
 
@@ -130,6 +131,11 @@ app.get('/', async function(req, res) {
     });
 });
 
+app.get('/user/:userId', (req, res) => {
+  res.render('user', { userId: req.params.userId });
+});
+
+
 // render user_info page and send game titles to frontend
 app.get('/user_info', function(req, res) {
   res.send('This is the user info page');
@@ -205,7 +211,8 @@ app.post('/api/login', function(req, res) {
       return;
     }
     else {
-      res.json(user);
+      // req.session.userId = user.UserId;
+      res.json({ userId: user.UserId });
     }
   });
 });
@@ -261,7 +268,7 @@ app.get('/api/user/:id', (req, res, next) => {
           gamesPlayed: gamesResults,
           recommendations: recommendationsResults
         };
-
+        
         res.json(userProfile);
       });
     });
@@ -336,6 +343,20 @@ app.post('/api/recommendation', async (req, res) => {
   });
 });
 
+app.delete('/api/recommendations/:recommendationId', (req, res, next) => {
+  const recommendationId = req.params.recommendationId;
+
+  const sql = 'DELETE FROM Recommendation WHERE RecommendationID = ?';
+  connection.query(sql, [recommendationId], (err, result) => {
+    if (err) {
+      console.error('Error deleting recommendation:', err);
+      res.status(500).send({ message: 'Error deleting recommendation', error: err });
+      return;
+    }
+    res.send({ message: 'Recommendation deleted successfully!' });
+  });
+});
+
 app.post('/api/game', async (req, res) => {
   const { title,releaseDate, price, developerId} = req.body;
   const sql = 'INSERT INTO Game (Title, ReleaseDate, Price, DeveloperID) VALUES (?, ?, ?, ?)';
@@ -350,6 +371,58 @@ app.post('/api/game', async (req, res) => {
   });
 });
 
+app.delete('/api/games/:gameId', (req, res, next) => {
+  const gameId = req.params.gameId;
+
+  const deleteRecommendationsSql = 'DELETE FROM Recommendation WHERE GameID = ?';
+  const deletePlaysSql = 'DELETE FROM Plays WHERE GameID = ?';
+  const deleteGameTagsSql = 'DELETE FROM GameTags WHERE GameID = ?';
+  const deleteGameSql = 'DELETE FROM Game WHERE GameID = ?';
+
+  connection.query(deleteRecommendationsSql, [gameId], (err, results) => {
+    if (err) {
+      console.error('Error deleting recommendations:', err);
+      return next(err);
+    }
+
+    connection.query(deletePlaysSql, [gameId], (err, results) => {
+      if (err) {
+        console.error('Error deleting plays:', err);
+        return next(err);
+      }
+
+      connection.query(deleteGameTagsSql, [gameId], (err, results) => {
+        if (err) {
+          console.error('Error deleting game tags:', err);
+          return next(err);
+        }
+
+        connection.query(deleteGameSql, [gameId], (err, results) => {
+          if (err) {
+            console.error('Error deleting game:', err);
+            return next(err);
+          }
+          res.send({ message: 'Game deleted successfully!' });
+        });
+      });
+    });
+  });
+});
+
+app.post('/api/user/:userId/games', (req, res, next) => {
+  const userId = req.params.userId;
+  const { gameId } = req.body;
+
+  const sql = 'INSERT INTO Plays (UserID, GameID) VALUES (?, ?)';
+  connection.query(sql, [userId, gameId], (err, result) => {
+    if (err) {
+      console.error('Error adding game to user profile:', err);
+      res.status(500).send({ message: 'Error adding game to user profile', error: err });
+      return;
+    }
+    res.send({ message: 'Game added to user profile successfully!' });
+  });
+});
 
 
 
