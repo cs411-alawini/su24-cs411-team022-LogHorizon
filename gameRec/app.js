@@ -23,8 +23,7 @@ app.use(express.static(__dirname + '../public'));
 
 
 /* GET home page, respond by rendering index.ejs */
-app.get('/', function(req, res) {
-  res.render('index', { title: 'Mark Attendance' });
+app.get('/', async function(req, res) {
 
   // find developers that make above average games
   const sql_one = `SELECT d.Name, AVG(r.Rating) as AvgRating, COUNT(g.GameID) as GameCount
@@ -119,7 +118,14 @@ app.get('/', function(req, res) {
       res.render('index', { title: 'Recommended Games', recommended_games: recommended_games});
     });
     */
-    
+    const [developers, top_games, recommended_games] = await Promise.all([query(sql_one), query(sql_two)]);
+
+    res.render('index', { 
+        title: 'Dashboard', 
+        developers: developers,
+        top_games: top_games,
+        recommended_games: recommended_games  // Include the third query result
+    });
 });
 
 
