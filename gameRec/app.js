@@ -21,11 +21,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '../public'));
 
+const query = (sql) => {
+  return new Promise((resolve, reject) => {
+      connection.query(sql, (err, results) => {
+          if (err) {
+              reject(err);
+          } else {
+              resolve(results);
+          }
+      });
+  });
+};
+
 
 /* GET home page, respond by rendering index.ejs */
-app.get('/', function(req, res) {
-  res.render('index', { title: 'Mark Attendance' });
+app.get('/', async function(req, res) {
 
+  var developers;
+  var top_games;
   // find developers that make above average games
   const sql_one = `SELECT d.Name, AVG(r.Rating) as AvgRating, COUNT(g.GameID) as GameCount
     FROM Developer d
@@ -84,9 +97,8 @@ app.get('/', function(req, res) {
         res.status(401).send({ message: 'No above-average developers found' });
         return;
       }
-
-      const developers = results;
-      res.render('index', { title: 'Developer List', developers: developers });
+      developers = results;
+      // res.render('index', { title: 'Developer List', developers: developers });
     });
 
     // query two
@@ -101,8 +113,8 @@ app.get('/', function(req, res) {
         return;
       }
 
-      const top_games = results;
-      res.render('index', { title: 'Top Rated Games', top_games: top_games});
+      top_games = results;
+      // res.render('index', { title: 'Top Rated Games', top_games: top_games});
     });
 
     /*
@@ -121,7 +133,13 @@ app.get('/', function(req, res) {
       res.render('index', { title: 'Recommended Games', recommended_games: recommended_games});
     });
     */
-    
+
+    res.render('index', { 
+        title: 'Dashboard', 
+        developers: developers,
+        top_games: top_games
+        // recommended_games: recommended_games  // Include the third query result
+    });
 });
 
 // render user_info page and send game titles to frontend
