@@ -21,18 +21,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const query = (sql) => {
-  return new Promise((resolve, reject) => {
-      connection.query(sql, (err, results) => {
-          if (err) {
-              reject(err);
-          } else {
-              resolve(results);
-          }
-      });
-  });
-};
-
 
 /* GET home page, respond by rendering index.ejs */
 app.get('/', async function(req, res) {
@@ -252,6 +240,34 @@ app.post('/api/register', async (req, res) => {
       });
   });
 });
+
+app.post('/api/recommendations', async (req, res, next) => {
+  const { userId, gameId, rating, comment } = req.body;
+  const sql = 'INSERT INTO Recommendation (UserId, GameId, Rating, Comment) VALUES (?, ?, ?, ?)';
+  
+  try {
+      const result = await query(sql, [userId, gameId, rating, comment]);
+      res.send({ message: 'Recommendation added successfully!', recommendationId: result.insertId });
+  } catch (err) {
+      console.error('Error adding recommendation:', err);
+      next(err);
+  }
+});
+
+app.post('/api/games', async (req, res, next) => {
+  const { title, developerId, price } = req.body;
+  const sql = 'INSERT INTO Game (Title, DeveloperId, Price) VALUES (?, ?, ?)';
+  
+  try {
+      const result = await query(sql, [title, developerId, price]);
+      res.send({ message: 'Game added successfully!', gameId: result.insertId });
+  } catch (err) {
+      console.error('Error adding game:', err);
+      next(err);
+  }
+});
+
+
 
 
 module.exports = app;
