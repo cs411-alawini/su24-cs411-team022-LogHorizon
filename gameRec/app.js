@@ -210,6 +210,22 @@ app.post('/api/login', function(req, res) {
   });
 });
 
+app.get('/api/user/:id', (req, res, next) => {
+  const userId = req.params.id;
+  const sql = 'SELECT * FROM User WHERE UserId = ?';
+  
+  connection.query(sql, [userId], (err, results) => {
+      if (err) {
+          console.error('Error fetching user data:', err);
+          return next(err);
+      }
+      if (results.length === 0) {
+          return res.status(404).send({ message: 'User not found' });
+      }
+      res.json(results[0]);
+  });
+});
+
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -241,12 +257,12 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-app.post('/api/recommendations', async (req, res, next) => {
-  const { userId, gameId, rating, comment } = req.body;
-  const sql = 'INSERT INTO Recommendation (UserId, GameId, Rating, Comment) VALUES (?, ?, ?, ?)';
+app.post('/api/recommendation', async (req, res, next) => {
+  const { userId, gameId, rating, recommendDate } = req.body;
+  const sql = 'INSERT INTO Recommendation (UserID, GameID, Rating, RecommendDate) VALUES (?, ?, ?, ?)';
   
   try {
-      const result = await query(sql, [userId, gameId, rating, comment]);
+      const result = await query(sql, [userId, gameId, rating, recommendDate]);
       res.send({ message: 'Recommendation added successfully!', recommendationId: result.insertId });
   } catch (err) {
       console.error('Error adding recommendation:', err);
@@ -254,12 +270,12 @@ app.post('/api/recommendations', async (req, res, next) => {
   }
 });
 
-app.post('/api/games', async (req, res, next) => {
-  const { title, developerId, price } = req.body;
-  const sql = 'INSERT INTO Game (Title, DeveloperId, Price) VALUES (?, ?, ?)';
+app.post('/api/game', async (req, res, next) => {
+  const { title,releaseDate, price, developerId} = req.body;
+  const sql = 'INSERT INTO Game (Title, ReleaseDate, Price, DeveloperID) VALUES (?, ?, ?, ?)';
   
   try {
-      const result = await query(sql, [title, developerId, price]);
+      const result = await query(sql, [title, releaseDate, price, developerId]);
       res.send({ message: 'Game added successfully!', gameId: result.insertId });
   } catch (err) {
       console.error('Error adding game:', err);
