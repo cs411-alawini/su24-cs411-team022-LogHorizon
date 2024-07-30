@@ -212,17 +212,59 @@ app.post('/api/login', function(req, res) {
 
 app.get('/api/user/:id', (req, res, next) => {
   const userId = req.params.id;
-  const sql = 'SELECT * FROM User WHERE UserId = ?';
-  
-  connection.query(sql, [userId], (err, results) => {
+
+  // SQL to fetch user information
+  const userSql = 'SELECT * FROM User WHERE UserId = ?';
+
+  // SQL to fetch games played by the user
+  const gamesSql = `
+    SELECT g.Title, g.ReleaseDate, g.Price
+    FROM Game g
+    JOIN Plays p ON g.GameID = p.GameID
+    WHERE p.UserID = ?
+  `;
+
+  // SQL to fetch recommendations made by the user
+  const recommendationsSql = `
+    SELECT r.Rating, r.RecommendDate, g.Title AS GameTitle
+    FROM Recommendation r
+    JOIN Game g ON r.GameID = g.GameID
+    WHERE r.UserID = ?
+  `;
+
+  connection.query(userSql, [userId], (err, userResults) => {
+    if (err) {
+      console.error('Error fetching user data:', err);
+      return next(err);
+    }
+    if (userResults.length === 0) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    const user = userResults[0];
+
+    connection.query(gamesSql, [userId], (err, gamesResults) => {
       if (err) {
-          console.error('Error fetching user data:', err);
+        console.error('Error fetching games data:', err);
+        return next(err);
+      }
+
+      connection.query(recommendationsSql, [userId], (err, recommendationsResults) => {
+        if (err) {
+          console.error('Error fetching recommendations data:', err);
           return next(err);
-      }
-      if (results.length === 0) {
-          return res.status(404).send({ message: 'User not found' });
-      }
-      res.json(results[0]);
+        }
+
+        // Combine all the results into one response object
+        const userProfile = {
+          user,
+          gamesPlayed: gamesResults,
+          recommendations: recommendationsResults
+        };
+
+        res.json(userProfile);
+      });
+    });
   });
 });
 
@@ -257,30 +299,55 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-app.post('/api/recommendation', async (req, res, next) => {
+app.post('/api/recommendation', async (req, res) => {
   const { userId, gameId, rating, recommendDate } = req.body;
-  const sql = 'INSERT INTO Recommendation (UserID, GameID, Rating, RecommendDate) VALUES (?, ?, ?, ?)';
-  
-  try {
-      const result = await query(sql, [userId, gameId, rating, recommendDate]);
-      res.send({ message: 'Recommendation added successfully!', recommendationId: result.insertId });
-  } catch (err) {
-      console.error('Error adding recommendation:', err);
-      next(err);
-  }
+
+  const checkRecommendationSql = 'SELECT * FROM Recommendation WHERE UserID = ? AND GameID = ?';
+  connection.query(checkRecommendationSql, [userId, gameId], (err, results) => {
+    if (err) {
+      console.error('Error checking recommendation existence:', err);
+      res.status(500).send({ message: 'Error checking recommendation existence', error: err });
+      return;
+    }
+
+    if (results.length > 0) {
+      // Recommendation exists, update it
+      const updateRecommendationSql = 'UPDATE Recommendation SET Rating = ?, RecommendDate = ? WHERE UserID = ? AND GameID = ?';
+      connection.query(updateRecommendationSql, [rating, recommendDate, userId, gameId], (err, result) => {
+        if (err) {
+          console.error('Error updating recommendation:', err);
+          res.status(500).send({ message: 'Error updating recommendation', error: err });
+          return;
+        }
+        res.send({ message: 'Recommendation updated successfully!' });
+      });
+    } else {
+      // Recommendation does not exist, insert a new one
+      const insertRecommendationSql = 'INSERT INTO Recommendation (UserID, GameID, Rating, RecommendDate) VALUES (?, ?, ?, ?, ?)';
+      connection.query(insertRecommendationSql, [userId, gameId, rating, recommendDate], (err, result) => {
+        if (err) {
+          console.error('Error adding recommendation:', err);
+          res.status(500).send({ message: 'Error adding recommendation', error: err });
+          return;
+        }
+        res.send({ message: 'Recommendation added successfully!', recommendationId: result.insertId });
+      });
+    }
+  });
 });
 
-app.post('/api/game', async (req, res, next) => {
+app.post('/api/game', async (req, res) => {
   const { title,releaseDate, price, developerId} = req.body;
   const sql = 'INSERT INTO Game (Title, ReleaseDate, Price, DeveloperID) VALUES (?, ?, ?, ?)';
   
-  try {
-      const result = await query(sql, [title, releaseDate, price, developerId]);
-      res.send({ message: 'Game added successfully!', gameId: result.insertId });
-  } catch (err) {
+  connection.query(sql, [title, releaseDate, price, developerId], (err, result) => {
+    if (err) {
       console.error('Error adding game:', err);
-      next(err);
-  }
+      res.status(500).send({ message: 'Error adding game', error: err });
+      return;
+    }
+    res.send({ message: 'Game added successfully!', gameId: result.insertId });
+  });
 });
 
 
