@@ -124,11 +124,75 @@ app.get('/', async function(req, res) {
     */
 
     res.render('index', { 
-        title: 'Dashboard', 
+        title: 'Index', 
         developers: developers,
         top_games: top_games
         // recommended_games: recommended_games  // Include the third query result
     });
+});
+
+app.get('/dashboard', async function(req,res) {
+  //var developers;
+  //var top_games;
+
+  const sql_one = `SELECT d.Name, AVG(r.Rating) as AvgRating, COUNT(g.GameID) as GameCount
+    FROM Developer d
+    JOIN Game g ON d.DeveloperID = g.DeveloperID
+    JOIN Recommendation r ON g.GameID = r.GameID
+    GROUP BY d.DeveloperID
+    HAVING AVG(r.Rating) > (
+        SELECT AVG(r2.Rating)
+        FROM Recommendation r2
+    )
+    ORDER BY AvgRating DESC, GameCount DESC
+    LIMIT 15;`;
+
+  const sql_two = `SELECT g.GameID, g.Title, d.Name AS Developer, AVG(r.Rating) AS AvgRating
+    FROM Game g
+    JOIN Recommendation r ON g.GameID = r.GameID
+    JOIN Developer d ON g.DeveloperID = d.DeveloperID
+    GROUP BY g.GameID, g.Title, d.Name
+    ORDER BY AvgRating DESC
+    LIMIT 15;`;
+
+  try {
+    // Use Promises to handle asynchronous queries
+    const [developers, top_games] = await Promise.all([
+      new Promise((resolve, reject) => {
+        connection.query(sql_one, function(err, results) {
+          if (err) return reject(err);
+          resolve(results);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        connection.query(sql_two, function(err, results) {
+          if (err) return reject(err);
+          resolve(results);
+        });
+      })
+    ]);
+
+    res.render('dashboard', { 
+      title: 'Dashboard', 
+      developers: developers,
+      top_games: top_games
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send({ message: 'Error fetching data', error: error });
+  }
+});
+
+app.get('/user', async function(req, res) {
+  res.render('user', {});
+});
+
+app.get('/games', async function(req, res) {
+  res.render('games', {});
+});
+
+app.get('/ratings', async function(req, res) {
+  res.render('ratings', {});
 });
 
 app.get('/user/:userId', (req, res) => {
