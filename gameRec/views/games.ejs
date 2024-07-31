@@ -80,7 +80,7 @@
 
         function fetchGames() {
             // Fetch games from the server and display them
-            fetch('/api/games')
+            fetch('/api/game')
                 .then(response => response.json())
                 .then(data => {
                     console.log('Data:', data); // Log the data for debugging

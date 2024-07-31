@@ -376,7 +376,7 @@ app.post('/api/recommendation', async (req, res) => {
       });
     } else {
       // Recommendation does not exist, insert a new one
-      const insertRecommendationSql = 'INSERT INTO Recommendation (UserID, GameID, Rating, RecommendDate) VALUES (?, ?, ?, ?, ?)';
+      const insertRecommendationSql = 'INSERT INTO Recommendation (UserID, GameID, Rating, RecommendDate) VALUES (?, ?, ?, ?)';
       connection.query(insertRecommendationSql, [userId, gameId, rating, recommendDate], (err, result) => {
         if (err) {
           console.error('Error adding recommendation:', err);
@@ -417,7 +417,7 @@ app.post('/api/game', async (req, res) => {
   });
 });
 
-app.get('/api/games', (req, res, next) => {
+app.get('/api/game', (req, res, next) => {
   const sql = `
       SELECT g.GameID, g.Title, g.AvgRating, d.Name AS Developer, g.Price
       FROM Game g

@@ -69,6 +69,13 @@
         <h1>Ratings</h1>
 
         <div class="form-container">
+            <h2>Add New Game</h2>
+            <form id="addGameForm">
+                <input type="text" name="game" placeholder="GameID" required>
+                <button type="submit">Add Game</button>
+            </form>
+        </div>
+        <div class="form-container">
             <h2>Add New Rating</h2>
             <form id="addRatingForm">
                 <select name="game" id="gameSelect" required>
@@ -149,6 +156,29 @@
             .catch(error => console.error('Error deleting rating:', error));
         }
 
+        document.getElementById('addGameForm').addEventListener('submit', function(event) {
+            const userId = window.location.pathname.split('/')[2];
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = {
+                userId: userId,
+                gameId: formData.get('game'),
+            };
+
+            fetch(`/api/user/${userId}/games`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchGames(); // Refresh game list after adding
+            })
+            .catch(error => console.error('Error adding rating:', error));
+        });
         document.getElementById('addRatingForm').addEventListener('submit', function(event) {
             const userId = window.location.pathname.split('/')[2];
             event.preventDefault();
