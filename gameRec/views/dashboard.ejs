@@ -152,14 +152,14 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Dashboard</h1>
                 </div>
-                <div class="section" id="gamesPlayed">
-                    <h2>Games Played</h2>
-                    <ul class="list" id="gamesList"></ul>
+                <div class="section" id="topDevelopers">
+                    <h2>topDevelopers</h2>
+                    <ul class="list" id="topDevelopersList"></ul>
                 </div>
         
-                <div class="section" id="recommendations">
-                    <h2>Recommendations</h2>
-                    <ul class="list" id="recommendationsList"></ul>
+                <div class="section" id="topRatedGames">
+                    <h2>topRatedGames</h2>
+                    <ul class="list" id="topRatedGamesList"></ul>
                 </div>
             </main>
         </div>
@@ -175,30 +175,34 @@
             const userId = window.location.pathname.split('/').pop();
             console.log('User ID:', userId); // Log the userId for debugging
 
-            fetch(`/api/user/${userId}`)
+            fetch(`/api/dashboard/${userId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data) {
                         console.log('Data:', data); // Log the data for debugging
-                        const gamesList = document.getElementById('gamesList');
-                        data.gamesPlayed.forEach(game => {
+
+                        // Populate top developers list
+                        const topDevelopersList = document.getElementById('topDevelopersList');
+                        data.topDevelopers.forEach(dev => {
                             const li = document.createElement('li');
-                            li.textContent = `${game.Title} (Price: $${game.Price}, Release Date: ${game.ReleaseDate})`;
-                            gamesList.appendChild(li);
+                            li.textContent = `${dev.Name} - Avg Rating: ${dev.AvgRating}, Game Count: ${dev.GameCount}`;
+                            topDevelopersList.appendChild(li);
                         });
 
-                        const recommendationsList = document.getElementById('recommendationsList');
-                        data.recommendations.forEach(rec => {
+                        // Populate top-rated games list
+                        const topRatedGamesList = document.getElementById('topRatedGamesList');
+                        data.topRatedGames.forEach(game => {
                             const li = document.createElement('li');
-                            li.textContent = `${rec.GameTitle} - Rating: ${rec.Rating}, Date: ${rec.RecommendDate}, Comment: ${rec.Comment}`;
-                            recommendationsList.appendChild(li);
+                            li.textContent = `${game.Title} (Developer: ${game.Developer}, Avg Rating: ${game.AvgRating})`;
+                            topRatedGamesList.appendChild(li);
                         });
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching user profile:', error);
+                    console.error('Error fetching dashboard data:', error);
                 });
         });
+
     </script>
 </body>
 </html>

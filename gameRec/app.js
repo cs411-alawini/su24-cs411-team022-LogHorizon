@@ -106,22 +106,6 @@ app.get('/', async function(req, res) {
       // res.render('index', { title: 'Top Rated Games', top_games: top_games});
     });
 
-    /*
-    connection.query(sql_three, function(err, results) {
-      if (err) {
-        console.error('Error fetching recommended games data:', err);
-        res.status(500).send({ message: 'Error fetching games data', error: err });
-        return;
-      }
-      if (results.length === 0) {
-        res.status(401).send({ message: 'No recommended games found' });
-        return;
-      }
-
-      const recommended_games = results;
-      res.render('index', { title: 'Recommended Games', recommended_games: recommended_games});
-    });
-    */
 
     res.render('index', { 
         title: 'Index', 
@@ -237,6 +221,62 @@ app.get('/api/user/:id', (req, res, next) => {
     });
   });
 });
+
+app.get('/api/dashboard/:id', (req, res, next) => {
+  const userId = req.params.id;
+  console.log('Fetching dashboard data for user ID:', userId);
+
+  // Query to get top developers based on average rating of their games
+  const topDevelopersSql = `
+      SELECT d.DeveloperID, d.Name, AVG(r.Rating) as AvgRating, COUNT(g.GameID) as GameCount
+      FROM Developer d
+      JOIN Game g ON d.DeveloperID = g.DeveloperID
+      JOIN Recommendation r ON g.GameID = r.GameID
+      GROUP BY d.DeveloperID
+      HAVING AVG(r.Rating) > (
+          SELECT AVG(r2.Rating)
+          FROM Recommendation r2
+      )
+      ORDER BY AvgRating DESC, GameCount DESC
+      LIMIT 15;
+  `;
+
+  // Query to get top-rated games
+  const topRatedGamesSql = `
+      SELECT g.GameID, g.Title, d.Name AS Developer, AVG(r.Rating) AS AvgRating
+      FROM Game g
+      JOIN Recommendation r ON g.GameID = r.GameID
+      JOIN Developer d ON g.DeveloperID = d.DeveloperID
+      GROUP BY g.GameID, g.Title, d.Name
+      ORDER BY AvgRating DESC
+      LIMIT 15;
+  `;
+
+  connection.query(topDevelopersSql, (err, topDevelopersResults) => {
+      if (err) {
+          console.error('Error fetching top developers:', err);
+          return next(err);
+      }
+      // console.log('Top developers data:', topDevelopersResults);
+
+      connection.query(topRatedGamesSql, (err, topRatedGamesResults) => {
+          if (err) {
+              console.error('Error fetching top rated games:', err);
+              return next(err);
+          }
+          // console.log('Top rated games data:', topRatedGamesResults);
+
+          const dashboardData = {
+              topDevelopers: topDevelopersResults,
+              topRatedGames: topRatedGamesResults
+          };
+          console.log('dashboard successful:', dashboardData);
+
+          res.json(dashboardData);
+      });
+  });
+});
+
 
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
