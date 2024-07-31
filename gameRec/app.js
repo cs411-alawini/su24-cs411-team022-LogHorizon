@@ -128,7 +128,8 @@ app.get('/dashboard/:userId/games', async function(req, res) {
 });
 
 app.get('/dashboard/:userId/ratings', async function(req, res) {
-  
+  let UserId = request.params.userId;
+  const sql = `SELECT FROM User u JOIN Plays p ON (u.UserId = p.UserId) JOIN Game g ON (p.GameId = g.GameId) WHERE u.UserId = ${UserId}`;
 
   res.render('ratings', { userId: req.params.userId });
 });
