@@ -215,9 +215,11 @@
 
                 const keyword = document.getElementById('searchKeyword').value;
 
-                fetch(`/api/games/search?keyword=${keyword}`)
+                fetch(`/api/search?keyword=${keyword}`)
                     .then(response => response.json())
                     .then(data => {
+                        console.log('Data:', data); // Log the data for debugging
+
                         const resultsContainer = document.getElementById('searchResults');
                         resultsContainer.innerHTML = '';
 

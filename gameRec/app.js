@@ -488,7 +488,7 @@ app.post('/api/user/:userId/games', (req, res, next) => {
   });
 });
 
-app.get('/api/games/search', (req, res, next) => {
+app.get('/api/search', (req, res, next) => {
   const keyword = req.query.keyword;
 
   const sql = `
@@ -504,6 +504,7 @@ app.get('/api/games/search', (req, res, next) => {
           return next(err);
       }
 
+      console.log('Query results:', results);
       res.json(results);
   });
 });
