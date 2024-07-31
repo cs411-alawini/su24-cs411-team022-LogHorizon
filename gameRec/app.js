@@ -119,20 +119,16 @@ app.get('/dashboard/:userId', async function(req,res) {
   res.render('dashboard', { userId: req.params.userId });
 });
 
-app.get('/user', async function(req, res) {
-  res.render('user', {});
-});
-
-app.get('/games', async function(req, res) {
-  res.render('games', {});
-});
-
-app.get('/ratings', async function(req, res) {
-  res.render('ratings', {});
-});
-
-app.get('/user/:userId', (req, res) => {
+app.get('/dashboard/:userId/user', async function(req, res) {
   res.render('user', { userId: req.params.userId });
+});
+
+app.get('/dashboard/:userId/games', async function(req, res) {
+  res.render('games', { userId: req.params.userId });
+});
+
+app.get('/dashboard/:userId/ratings', async function(req, res) {
+  res.render('ratings', { userId: req.params.userId });
 });
 
 

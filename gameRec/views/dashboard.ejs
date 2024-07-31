@@ -127,19 +127,19 @@
                 <div class="position-sticky pt-3 sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="user/:userId">
+                            <a class="nav-link active" aria-current="page" href="#" id="userLink">
                                 <span data-feather="home" class="align-text-bottom"></span>
                                 User
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="games">
+                            <a class="nav-link" href="#" id="gamesLink">
                                 <span data-feather="file" class="align-text-bottom"></span>
                                 Games
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="ratings">
+                            <a class="nav-link" href="#" id="ratingsLink">
                                 <span data-feather="shopping-cart" class="align-text-bottom"></span>
                                 Ratings
                             </a>
@@ -201,8 +201,12 @@
                 .catch(error => {
                     console.error('Error fetching dashboard data:', error);
                 });
-        });
 
+            // Update navigation links
+            document.getElementById('userLink').href = `/dashboard/${userId}/user`;
+            document.getElementById('gamesLink').href = `/dashboard/${userId}/games`;
+            document.getElementById('ratingsLink').href = `/dashboard/${userId}/ratings`;
+        });
     </script>
 </body>
 </html>

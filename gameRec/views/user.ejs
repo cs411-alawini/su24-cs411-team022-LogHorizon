@@ -70,12 +70,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const userId = window.location.pathname.split('/').pop();
+            const userId = window.location.pathname.split('/')[2];
 
             fetch(`/api/user/${userId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data) {
+                        console.log('Data:', data); // Log the data for debugging
                         document.getElementById('username').textContent = data.user.Username;
                         document.getElementById('email').textContent = data.user.Email;
 
