@@ -128,6 +128,8 @@ app.get('/dashboard/:userId/games', async function(req, res) {
 });
 
 app.get('/dashboard/:userId/ratings', async function(req, res) {
+  
+
   res.render('ratings', { userId: req.params.userId });
 });
 

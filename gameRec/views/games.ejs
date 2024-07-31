@@ -83,6 +83,28 @@
     <script>
         document.getElementById('addGameForm').addEventListener('submit', function(event) {
             event.preventDefault();
+            document.addEventListener('DOMContentLoaded', function() {
+            function loadGames() {
+                fetch('/api/games')
+                    .then(response => response.json())
+                    .then(games => {
+                        const gamesList = document.getElementById('gamesList');
+                        gamesList.innerHTML = '';
+                        games.forEach(game => {
+                            const li = document.createElement('li');
+                            li.dataset.gameId = game.GameID;
+                            li.innerHTML = 
+                                ${game.Title} (Genre: ${game.Genre}, Developer: ${game.Developer})
+                                <div>
+                                    <button class="edit" onclick="editGame(${game.GameID})">Edit</button>
+                                    <button class="delete" onclick="deleteGame(${game.GameID})">Delete</button>
+                                </div>
+                            ;
+                            gamesList.appendChild(li);
+                        });
+                    })
+                    .catch(error => console.error('Error loading games:', error));
+            }
             // Add game submission logic
         });
     </script>
