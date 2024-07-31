@@ -136,59 +136,6 @@ app.get('/user/:userId', (req, res) => {
 });
 
 
-// render user_info page and send game titles to frontend
-app.get('/user_info', function(req, res) {
-  res.send('This is the user info page');
-
-  // query to show list of games,
-  // so users can check which games they've played
-  const sql_one = `SELECT Title FROM Game LIMIT 300`;
-  connection.query(sql_one, function(err, results) {
-    if (err) {
-      console.error('Error fetching list of games:', err);
-      res.status(500).send({ message: 'Error fetching list of games', error: err });
-      return;
-    }
-    if (results.length === 0) {
-      res.status(401).send({ message: 'No games in Games table' });
-      return;
-    }
-
-    const games_list = results;
-    res.render('index', { title: 'List of Games', games_list: games_list});
-  });
-
-  
-  let UserId = 0;
-  // this is a list of a user's played games,
-  // so they can rate games they've played
-  if (UserId == 1) {
-    const sql_two = `SELECT Title FROM Game WHERE UserId = '${UserId}'`;
-    connection.query(sql_one, function(err, results) {
-      if (err) {
-        console.error('Error fetching user\'s played games:', err);
-        res.status(500).send({ message: 'Error fetching User Games', error: err });
-        return;
-      }
-      if (results.length === 0) {
-        res.status(401).send({ message: 'User has played no games!' });
-        return;
-      }
-  
-      const user_games = results; 
-      res.render('index', { title: 'List of Games', user_games: user_games});
-    });
-  }
-});
-
-// make changes to how many games user has played
-app.post('/user_info', function(req, res) {
-
-});
-
-
-
-
 app.post('/api/login', function(req, res) {
   const umail = req.body.umail;
   const password = req.body.password;
@@ -424,6 +371,24 @@ app.post('/api/user/:userId/games', (req, res, next) => {
   });
 });
 
+app.get('/api/games/search', (req, res, next) => {
+  const keyword = req.query.keyword;
 
+  const sql = `
+      SELECT g.GameID, g.Title, g.ReleaseDate, g.Price, d.Name AS Developer
+      FROM Game g
+      JOIN Developer d ON g.DeveloperID = d.DeveloperID
+      WHERE g.Title LIKE ? OR d.Name LIKE ?
+  `;
+
+  connection.query(sql, [`%${keyword}%`, `%${keyword}%`], (err, results) => {
+      if (err) {
+          console.error('Error searching for games:', err);
+          return next(err);
+      }
+
+      res.json(results);
+  });
+});
 
 module.exports = app;
