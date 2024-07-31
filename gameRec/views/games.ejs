@@ -62,50 +62,87 @@
             <h2>Add New Game</h2>
             <form id="addGameForm">
                 <input type="text" name="title" placeholder="Game Title" required>
-                <input type="text" name="genre" placeholder="Genre" required>
-                <input type="text" name="developer" placeholder="Developer" required>
+                <input type="text" name="price" placeholder="Price" required>
+                <input type="text" name="developer" placeholder="DeveloperId" required>
                 <button type="submit">Add Game</button>
             </form>
         </div>
 
-        <div class="game-list">
+        <div class="game-list" id="gameList">
             <h2>Game List</h2>
-            <!-- Example game item. Replace this with dynamic content -->
-            <div class="game-item">
-                <h3>Game Title</h3>
-                <p>Genre: Action</p>
-                <p>Developer: Game Dev</p>
-                <button>Edit</button>
-                <button>Delete</button>
-            </div>
+            <!-- Game items will be dynamically added here -->
         </div>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchGames();
+        });
+
+        function fetchGames() {
+            // Fetch games from the server and display them
+            fetch('/api/games')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Data:', data); // Log the data for debugging
+                    const gameList = document.getElementById('gameList');
+                    gameList.innerHTML = ''; // Clear existing content
+                    data.forEach(game => {
+                        const gameItem = document.createElement('div');
+                        gameItem.className = 'game-item';
+                        gameItem.innerHTML = `
+                            <h3>${game.Title}</h3>
+                            <p>Rating: ${game.AvgRating}</p>
+                            <p>Developer: ${game.Developer}</p>
+                            <p>Price: ${game.Price}</p>
+                            <button onclick="editGame(${game.GameID})">Edit</button>
+                            <button onclick="deleteGame(${game.GameID})">Delete</button>
+                        `;
+                        gameList.appendChild(gameItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching games:', error));
+        }
         document.getElementById('addGameForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            document.addEventListener('DOMContentLoaded', function() {
-            function loadGames() {
-                fetch('/api/games')
-                    .then(response => response.json())
-                    .then(games => {
-                        const gamesList = document.getElementById('gamesList');
-                        gamesList.innerHTML = '';
-                        games.forEach(game => {
-                            const li = document.createElement('li');
-                            li.dataset.gameId = game.GameID;
-                            li.innerHTML = 
-                                ${game.Title} (Genre: ${game.Genre}, Developer: ${game.Developer})
-                                <div>
-                                    <button class="edit" onclick="editGame(${game.GameID})">Edit</button>
-                                    <button class="delete" onclick="deleteGame(${game.GameID})">Delete</button>
-                                </div>
-                            ;
-                            gamesList.appendChild(li);
-                        });
-                    })
-                    .catch(error => console.error('Error loading games:', error));
-            }
+            const formData = new FormData(this);
+            const data = {
+                title: formData.get('title'),
+                releaseDate: "2024-01-01",
+                price: formData.get('price'),
+                developerId: formData.get('developer')
+            };
+
+            fetch('/api/game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchGames(); // Refresh game list after adding
+            })
+            .catch(error => console.error('Error adding game:', error));
         });
+
+        function editGame(gameId) {
+            // Logic to handle game edit
+            alert('Edit functionality not implemented yet.');
+        }
+
+        function deleteGame(gameId) {
+            fetch(`/api/games/${gameId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchGames(); // Refresh game list after deletion
+            })
+            .catch(error => console.error('Error deleting game:', error));
+        }
     </script>
 </body>
 </html>

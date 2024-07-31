@@ -128,11 +128,34 @@ app.get('/dashboard/:userId/games', async function(req, res) {
 });
 
 app.get('/dashboard/:userId/ratings', async function(req, res) {
-  let UserId = request.params.userId;
-  const sql = `SELECT FROM User u JOIN Plays p ON (u.UserId = p.UserId) JOIN Game g ON (p.GameId = g.GameId) WHERE u.UserId = ${UserId}`;
-
   res.render('ratings', { userId: req.params.userId });
+
 });
+
+app.get('/api/games/:userId', async function(req, res) {
+  let userId = req.params.userId;
+  const sql = `
+        SELECT g.GameID, g.Title
+        FROM Game g
+        JOIN Plays p ON g.GameID = p.GameID
+        JOIN Developer d ON g.DeveloperID = d.DeveloperID
+        WHERE p.UserID = ?
+    `;
+  connection.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching user data:', err);
+      res.status(500).send({ message: 'Error fetching user data', error: err });
+      return;
+    }
+    if (results.length === 0) {
+      res.status(401).send({ message: 'No games found' });
+      return;
+    }
+    console.log('Login successful:', results);
+    res.json({ games: results });
+  });
+});
+
 
 
 app.post('/api/login', function(req, res) {
@@ -308,6 +331,27 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
+app.get('/api/recommendations/:userId', (req, res, next) => {
+  const userId = req.params.userId;
+
+  const sql = `
+      SELECT r.RecommendationID, r.Rating, r.Review, g.Title AS GameTitle
+      FROM Recommendation r
+      JOIN Game g ON r.GameID = g.GameID
+      WHERE r.UserID = ?
+  `;
+
+  connection.query(sql, [userId], (err, results) => {
+      if (err) {
+          console.error('Error fetching recommendations:', err);
+          return next(err);
+      }
+
+      res.json(results);
+  });
+});
+
+
 app.post('/api/recommendation', async (req, res) => {
   const { userId, gameId, rating, recommendDate } = req.body;
 
@@ -370,6 +414,24 @@ app.post('/api/game', async (req, res) => {
       return;
     }
     res.send({ message: 'Game added successfully!', gameId: result.insertId });
+  });
+});
+
+app.get('/api/games', (req, res, next) => {
+  const sql = `
+      SELECT g.GameID, g.Title, g.AvgRating, d.Name AS Developer, g.Price
+      FROM Game g
+      JOIN Developer d ON g.DeveloperID = d.DeveloperID
+      LIMIT 100
+  `;
+
+  connection.query(sql, (err, results) => {
+      if (err) {
+          console.error('Error fetching games:', err);
+          return next(err);
+      }
+
+      res.json(results);
   });
 });
 
