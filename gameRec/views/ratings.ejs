@@ -73,10 +73,8 @@
             <form id="addRatingForm">
                 <select name="game" id="gameSelect" required>
                     <option value="">Select Game</option>
-                    <!-- Add options dynamically based on games in the database -->
                 </select>
                 <input type="number" name="rating" placeholder="Rating (1-5)" min="1" max="5" required>
-                <input type="text" name="review" placeholder="Review" required>
                 <button type="submit">Add Rating</button>
             </form>
         </div>
@@ -90,7 +88,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const userId = window.location.pathname.split('/')[2];
             fetchGames(userId);
-            fetchRecommendations();
+            fetchRecommendations(userId);
         });
 
         function fetchGames(userId) {
@@ -102,15 +100,15 @@
                     const gameSelect = document.getElementById('gameSelect');
                     data.games.forEach(game => {
                         const option = document.createElement('option');
-                        option.value = game.id;
-                        option.textContent = game.title;
+                        option.value = game.GameID;
+                        option.textContent = game.Title;
                         gameSelect.appendChild(option);
                     });
                 })
                 .catch(error => console.error('Error fetching games:', error));
         }
 
-        function fetchRecommendations() {
+        function fetchRecommendations(userId) {
             // Fetch ratings from the server
             fetch(`/api/recommendation/${userId}`)
                 .then(response => response.json())
@@ -118,13 +116,13 @@
                     console.log('Data:', data); // Log the data for debugging
                     const ratingList = document.getElementById('ratingList');
                     ratingList.innerHTML = ''; // Clear existing content
-                    data.ratings.forEach(rating => {
+                    data.forEach(rating => {
                         const ratingItem = document.createElement('div');
                         ratingItem.className = 'rating-item';
                         ratingItem.innerHTML = `
-                            <h3>${rating.gameId}</h3>
-                            <p>Rating: ${rating.rating}</p>
-                            <p>RecommendDate: ${rating.review}</p>
+                            <h3>${rating.GameTitle}</h3>
+                            <p>Rating: ${rating.Rating}</p>
+                            <p>RecommendDate: ${rating.RecommendDate}</p>
                             <button onclick="editRating(${rating.id})">Edit</button>
                             <button onclick="deleteRating(${rating.id})">Delete</button>
                         `;
@@ -172,7 +170,7 @@
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                fetchRatings(); // Refresh ratings list after adding
+                fetchRecommendations(); // Refresh ratings list after adding
             })
             .catch(error => console.error('Error adding rating:', error));
         });

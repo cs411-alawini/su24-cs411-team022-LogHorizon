@@ -331,11 +331,11 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-app.get('/api/recommendations/:userId', (req, res, next) => {
+app.get('/api/recommendation/:userId', (req, res, next) => {
   const userId = req.params.userId;
 
   const sql = `
-      SELECT r.RecommendationID, r.Rating, r.Review, g.Title AS GameTitle
+      SELECT r.Rating, r.RecommendDate, g.Title AS GameTitle
       FROM Recommendation r
       JOIN Game g ON r.GameID = g.GameID
       WHERE r.UserID = ?
